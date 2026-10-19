@@ -1,0 +1,444 @@
+{
+    "version":  1,
+    "updatedAt":  "2026-10-18",
+    "entries":  [
+                    {
+                        "id":  "gaussian-splatting-3dgs",
+                        "name":  "3D Gaussian Splatting",
+                        "aliases":  [
+                                        "3DGS",
+                                        "3D Gaussian Splatting for Real-Time Radiance Field Rendering"
+                                    ],
+                        "domain":  "neural-3d",
+                        "subdomain":  "gaussian-splatting",
+                        "functionKey":  "radiance-field-fitting",
+                        "functionLabel":  "连续体积场重建",
+                        "summary":  "把场景表示成一堆各向异性 3D 高斯椭球，直接光栅化泼溅，实现实时新视角合成。",
+                        "howItWorks":  "场景是一组可学习的高斯原语，每个带位置、三维协方差（用缩放 + 四元数保证半正定）、不透明度与球谐颜色系数。渲染用 tile-based 光栅化：把高斯按深度排序后投影到屏幕，在 16×16 的 tile 内按前后顺序做 alpha 混合，因此不需要沿光线逐点采样。优化时用照片 L2 损失反向传播，并周期性做自适应密度控制——梯度大的高斯分裂、过大的拆分、几乎透明但覆盖过大的裁剪掉。",
+                        "whyItMatters":  "它把神经重建的渲染从秒级降到 1080p 实时（100+ FPS），而训练只要几十分钟，是目前实景三维重建的默认选择，也是 Web/VR 里可直接落地的一档。相比 NeRF 系，它的产出是显式原语，便于编辑、裁剪、拼合与流式加载。",
+                        "tradeoffs":  "用几张到几百 MB 的显式存储换来了实时渲染；因为高斯是离散且相互独立的，表面重建需要额外约束（这正是 2DGS/SuGaR/GOF 的动机），在欠观测区域容易出现漂浮块，镜面反射与细薄结构仍然是公认弱点。",
+                        "complexity":  "约 10^5–10^7 个高斯，训练 30 分钟（30k 迭代），渲染 O(高斯数 × 覆盖像素) 的 tile 光栅化",
+                        "inputs":  [
+                                       "多视角照片",
+                                       "SfM 稀疏点云与相机内外参"
+                                   ],
+                        "outputs":  [
+                                        "3D 高斯点云（.ply）",
+                                        "实时新视角图像",
+                                        "可选网格（经 SuGaR/2DGS 后处理）"
+                                    ],
+                        "quality":  5,
+                        "performance":  4,
+                        "difficulty":  4,
+                        "maturity":  "production",
+                        "year":  2023,
+                        "tags":  [
+                                     "gaussian-splatting",
+                                     "real-time",
+                                     "rasterization",
+                                     "explicit-representation",
+                                     "radiance-field",
+                                     "web-viewer"
+                                 ],
+                        "platforms":  [
+                                          "PC",
+                                          "Web",
+                                          "VR",
+                                          "Offline"
+                                      ],
+                        "papers":  [
+                                       {
+                                           "title":  "3D Gaussian Splatting for Real-Time Radiance Field Rendering",
+                                           "url":  "https://arxiv.org/abs/2308.04079",
+                                           "venue":  "SIGGRAPH 2023",
+                                           "year":  2023
+                                       }
+                                   ],
+                        "implementations":  [
+                                                {
+                                                    "name":  "graphdeco-inria/gaussian-splatting",
+                                                    "type":  "paper-code",
+                                                    "url":  "https://github.com/graphdeco-inria/gaussian-splatting",
+                                                    "language":  "Python + CUDA",
+                                                    "license":  "Gaussian-Splatting License（仅非商业研究）",
+                                                    "stars":  24220,
+                                                    "lastCommit":  "2025-10",
+                                                    "maintained":  true,
+                                                    "notes":  "INRIA 官方参考实现，自带 SIBR 实时查看器；许可证禁止商业使用，产品化需另找方案。"
+                                                },
+                                                {
+                                                    "name":  "gsplat (nerfstudio)",
+                                                    "type":  "pip",
+                                                    "url":  "https://docs.gsplat.studio/main/",
+                                                    "language":  "Python + CUDA",
+                                                    "license":  "Apache-2.0",
+                                                    "stars":  5801,
+                                                    "lastCommit":  "2026-09",
+                                                    "maintained":  true,
+                                                    "notes":  "pip install gsplat 即可用，纯 PyTorch 友好的 CUDA 光栅化后端，支持 MCMC 等多种训练策略，是目前融入自有训练循环的首选。"
+                                                },
+                                                {
+                                                    "name":  "antimatter15/splat",
+                                                    "type":  "github",
+                                                    "url":  "https://github.com/antimatter15/splat",
+                                                    "language":  "JavaScript (WebGL)",
+                                                    "license":  "MIT",
+                                                    "stars":  3074,
+                                                    "lastCommit":  "2025-11",
+                                                    "maintained":  true,
+                                                    "notes":  "浏览器端 3DGS 查看器，可直接加载 .ply/.splat，是 Web 展示的常见起点。"
+                                                },
+                                                {
+                                                    "name":  "@hirako2000/gaussian-splats-3d",
+                                                    "type":  "npm",
+                                                    "url":  "https://www.npmjs.com/package/@hirako2000/gaussian-splats-3d/v/0.4.10",
+                                                    "language":  "TypeScript",
+                                                    "license":  "unknown",
+                                                    "notes":  "npm 上的 Three.js 系 3DGS 渲染库，用于把泼溅集成进 Web 前端。"
+                                                }
+                                            ],
+                        "variants":  [
+                                         {
+                                             "name":  "Mip-Splatting",
+                                             "id":  "mip-splatting",
+                                             "note":  "加 3D/2D 滤波抑制缩放走样，多尺度查看更稳。"
+                                         },
+                                         {
+                                             "name":  "Scaffold-GS",
+                                             "id":  "scaffold-gs",
+                                             "note":  "锚点 + 神经高斯，存储更省、视角自适应，适合大场景。"
+                                         },
+                                         {
+                                             "name":  "2D Gaussian Splatting",
+                                             "id":  "2dgs",
+                                             "note":  "改用面元表示，几何与法线质量显著更好，代价是外观自由度下降。"
+                                         },
+                                         {
+                                             "name":  "SuGaR",
+                                             "id":  "sugar",
+                                             "note":  "把高斯对齐到表面以导出可用的三角网格。"
+                                         }
+                                     ],
+                        "bestFor":  [
+                                        "实景三维重建",
+                                        "Web/VR 展示",
+                                        "需要实时帧率的新视角合成",
+                                        "游戏/影视前期扫描"
+                                    ],
+                        "avoidWhen":  [
+                                          "需要严格闭合的三角网格（需换 2DGS/SuGaR/GOF）",
+                                          "镜面反射为主的场景",
+                                          "商业闭源产品（官方许可非商业）",
+                                          "无 SfM 初始点云的极稀疏视角"
+                                      ],
+                        "relatedIds":  [
+                                           "mip-splatting",
+                                           "scaffold-gs",
+                                           "2dgs"
+                                       ],
+                        "confidence":  "high",
+                        "addedAt":  "2026-10-16",
+                        "lastChecked":  "2026-10-16",
+                        "sources":  [
+                                        {
+                                            "url":  "https://arxiv.org/abs/2308.04079",
+                                            "kind":  "arxiv",
+                                            "title":  "3D Gaussian Splatting for Real-Time Radiance Field Rendering",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://github.com/graphdeco-inria/gaussian-splatting",
+                                            "kind":  "repo",
+                                            "title":  "graphdeco-inria/gaussian-splatting",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://docs.gsplat.studio/main/",
+                                            "kind":  "docs",
+                                            "title":  "gsplat 文档",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://scancode-licensedb.aboutcode.org/gaussian-splatting-2024.html",
+                                            "kind":  "docs",
+                                            "title":  "Gaussian-Splatting License 说明",
+                                            "fetchedAt":  "2026-10-16"
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "cloth-xpbd",
+                        "name":  "位置约束布料：PBD 与 XPBD",
+                        "aliases":  [
+                                        "Position Based Dynamics",
+                                        "XPBD",
+                                        "Extended PBD",
+                                        "位置约束动力学",
+                                        "compliance"
+                                    ],
+                        "domain":  "physics",
+                        "subdomain":  "cloth",
+                        "functionKey":  "cloth-simulation",
+                        "functionLabel":  "布料/柔体粒子约束仿真",
+                        "summary":  "不做力的积分，而是先预测位置再反复投影距离/弯曲/碰撞约束，用合规项 compliance 把刚度写成与时间步无关的参数。",
+                        "howItWorks":  "每步先用外力做半隐式欧拉预测位置（含速度阻尼），然后对每个约束求解位置修正量 Δx = λ M⁻¹ ∇C：距离约束把布料弹簧拉回静息长度，弯曲/长程约束抑制褶皱过尖，碰撞约束把粒子推出，修正后回写速度（v ← (x − x_prev)/dt）。PBD 的刚度是 0–1 的经验系数且随 dt 漂移；XPBD 引入 compliance α = 1/k，用拉格朗日乘子按 α̃ = α/dt² 归一，使刚度与时间步、迭代次数解耦，并天然给出阻尼可控的弹性行为。",
+                        "whyItMatters":  "PBD/XPBD 是实时布料的事实标准（游戏、VR、头发、软体），因为它无条件稳定——位置投影不会爆炸，可以按帧预算截断迭代，且碰撞/自碰撞能塞进同一循环里。",
+                        "tradeoffs":  "比不上隐式 FEM 的物理准确度（无严格材料参数、泊松比不真实、能量行为依赖迭代数）；自碰撞检测是主要开销；XPBD 用子步换稳定性时，每步要重新解算乘子，迭代预算紧张。相比质点弹簧+隐式积分，布料更「听话」但不太能直接对应杨氏模量。",
+                        "complexity":  "O(iterations × constraints)；典型 5–20 次迭代 × 1–10 子步",
+                        "inputs":  [
+                                       "网格拓扑与静息长度",
+                                       "质量/逆质量",
+                                       "刚度或 compliance",
+                                       "碰撞体"
+                                   ],
+                        "outputs":  [
+                                        "更新后的位置与速度",
+                                        "约束乘子（可推算张力）"
+                                    ],
+                        "quality":  5,
+                        "performance":  5,
+                        "difficulty":  3,
+                        "maturity":  "production",
+                        "year":  2007,
+                        "tags":  [
+                                     "cloth",
+                                     "pbd",
+                                     "xpbd",
+                                     "constraint",
+                                     "realtime",
+                                     "soft-body"
+                                 ],
+                        "platforms":  [
+                                          "PC",
+                                          "Console",
+                                          "Mobile",
+                                          "Web"
+                                      ],
+                        "papers":  [
+                                       {
+                                           "title":  "Position Based Dynamics",
+                                           "url":  "https://dl.acm.org/doi/abs/10.1016/j.jvcir.2007.01.005",
+                                           "venue":  "Journal of Visual Communication and Image Representation",
+                                           "year":  2007
+                                       },
+                                       {
+                                           "title":  "XPBD: Position-Based Simulation of Compliant Constrained Dynamics",
+                                           "url":  "https://dl.acm.org/doi/abs/10.1145/2994258.2994272",
+                                           "venue":  "MIG 2016",
+                                           "year":  2016
+                                       }
+                                   ],
+                        "implementations":  [
+                                                {
+                                                    "name":  "PositionBasedDynamics（ICG 官方实现）",
+                                                    "type":  "github",
+                                                    "url":  "https://github.com/InteractiveComputerGraphics/PositionBasedDynamics",
+                                                    "language":  "C++",
+                                                    "license":  "MIT",
+                                                    "stars":  2291,
+                                                    "lastCommit":  "2026-09-01",
+                                                    "maintained":  true,
+                                                    "notes":  "作者自己维护的库，含 XPBD 布料/柔体/流体 demo 与 CMake 工程，可直接对照论文公式；文档以示例为主。"
+                                                },
+                                                {
+                                                    "name":  "Taichi 示例集（mass-spring / PBD 布料）",
+                                                    "type":  "github",
+                                                    "url":  "https://raw.githubusercontent.com/taichi-dev/taichi/master/misc/examples.md",
+                                                    "language":  "Python",
+                                                    "license":  "Apache-2.0",
+                                                    "stars":  28414,
+                                                    "lastCommit":  "2026-10-05",
+                                                    "maintained":  true,
+                                                    "notes":  "用 Taichi 内核写的位置约束布料/弹簧示例，几十行 Python 就能跑出可交互效果，适合快速验证参数。"
+                                                }
+                                            ],
+                        "variants":  [
+                                         {
+                                             "name":  "质点弹簧 + 隐式积分",
+                                             "id":  "cloth-mass-spring",
+                                             "note":  "物理更接近连续介质、参数可对应真实材料，但需要解线性系统，稳定性和速度都不如位置约束。"
+                                         },
+                                         {
+                                             "name":  "位置约束流体（PBF）",
+                                             "id":  "fluid-pbf",
+                                             "note":  "同一套 PBD/XPBD 数学用在不可压流体上，说明它其实是通用约束框架。"
+                                         },
+                                         {
+                                             "name":  "形状匹配柔体",
+                                             "id":  "soft-body-shape-matching",
+                                             "note":  "形状匹配可看作「全局目标位置」约束，与 PBD 常混用。"
+                                         }
+                                     ],
+                        "bestFor":  [
+                                        "实时布料（角色衣服、旗帜、头发）",
+                                        "需要绝对稳定、可随时截断迭代的场景",
+                                        "代码量受限的独立游戏/Web 项目"
+                                    ],
+                        "avoidWhen":  [
+                                          "需要真实材料参数与褶皱物理精度的离线渲染",
+                                          "需要严格各向异性织物模型（应用 FEM/薄壳）"
+                                      ],
+                        "caveats":  "两个论文链接都是 ACM 摘要页（本轮未验证全文可访问）；XPBD 的 compliance 语义与子步长度绑定，跨引擎移植时数值不能直接照抄。",
+                        "confidence":  "high",
+                        "addedAt":  "2026-10-16",
+                        "lastChecked":  "2026-10-16",
+                        "sources":  [
+                                        {
+                                            "url":  "https://dl.acm.org/doi/abs/10.1016/j.jvcir.2007.01.005",
+                                            "kind":  "paper",
+                                            "title":  "Müller et al., Position Based Dynamics",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://dl.acm.org/doi/abs/10.1145/2994258.2994272",
+                                            "kind":  "paper",
+                                            "title":  "Macklin et al., XPBD (MIG 2016)",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://github.com/InteractiveComputerGraphics/PositionBasedDynamics",
+                                            "kind":  "repo",
+                                            "title":  "PositionBasedDynamics 仓库（含示例与论文对应关系）",
+                                            "fetchedAt":  "2026-10-16"
+                                        }
+                                    ]
+                    },
+                    {
+                        "id":  "noise-worley",
+                        "name":  "Worley / Cellular Noise",
+                        "aliases":  [
+                                        "Worley Noise",
+                                        "Cellular Noise",
+                                        "Feature Point Noise",
+                                        "Voronoi Noise"
+                                    ],
+                        "domain":  "procedural",
+                        "subdomain":  "noise",
+                        "functionKey":  "cellular-noise",
+                        "functionLabel":  "细胞噪声",
+                        "summary":  "在空间散布特征点，用「到最近若干个特征点的距离」当噪声值，生成细胞、裂纹、石砾质感。",
+                        "howItWorks":  "把空间切成网格，每格用哈希生成一个特征点。对采样点，只检查所在格及相邻 3^n-1 个格（2D 9 格、3D 27 格），算出到最近 k 个特征点的距离并排序得到 F1、F2、F3…。F1 单独用是细胞团块，F2-F1 是细胞边界（裂纹/马赛克），F1×F2 之类的组合可做岩石与鳞片。距离度量可换欧氏/曼哈顿/切比雪夫，得到方角或菱形细胞。",
+                        "whyItMatters":  "它是唯一能直接给出「区块边界」的噪声：石头开裂、干裂土地、马赛克、生物细胞、以及地牢房间的天然分区，都靠 F2-F1 一步得到，不需要额外边缘检测。",
+                        "tradeoffs":  "比 Perlin 贵得多（2D 要查 9 个格、3D 27 个），单次采样成本约为梯度噪声的 5-10 倍；且 F1 场在山脊处不可导，直接当地形高度会得到大量尖角。要平滑需和梯度噪声混合。",
+                        "complexity":  "O(3^n · k) 每采样点（3D 约 27 次距离计算）",
+                        "inputs":  [
+                                       "坐标",
+                                       "特征点密度/网格尺寸",
+                                       "距离度量",
+                                       "k 值"
+                                   ],
+                        "outputs":  [
+                                        "F1..Fk 距离值",
+                                        "细胞 ID"
+                                    ],
+                        "quality":  4,
+                        "performance":  2,
+                        "difficulty":  3,
+                        "maturity":  "production",
+                        "year":  1996,
+                        "tags":  [
+                                     "cellular",
+                                     "voronoi",
+                                     "feature-points",
+                                     "cracks",
+                                     "rock"
+                                 ],
+                        "platforms":  [
+                                          "PC",
+                                          "Console",
+                                          "Mobile",
+                                          "Web",
+                                          "Offline"
+                                      ],
+                        "papers":  [
+                                       {
+                                           "title":  "A Cellular Texture Basis Function",
+                                           "url":  "http://cedric.cnam.fr/~cubaud/PROCEDURAL/worley.pdf",
+                                           "venue":  "SIGGRAPH 1996",
+                                           "year":  1996
+                                       },
+                                       {
+                                           "title":  "A Cellular Texture Basis Function (SIGGRAPH  bibliography entry)",
+                                           "url":  "http://gbib.siggraph.org/index.php?detail=Worley:1996:ACT",
+                                           "venue":  "SIGGRAPH 1996",
+                                           "year":  1996
+                                       }
+                                   ],
+                        "implementations":  [
+                                                {
+                                                    "name":  "FastNoiseLite (Cellular noiseType)",
+                                                    "type":  "github",
+                                                    "url":  "https://github.com/Auburn/FastNoiseLite",
+                                                    "language":  "C#/C++/C/Java/HLSL/GLSL/JS/Rust/Go",
+                                                    "license":  "MIT",
+                                                    "maintained":  true,
+                                                    "notes":  "直接提供 Cellular 类型与 distance function / return type 选项（F1、F2-F1 等），拿来即用。"
+                                                },
+                                                {
+                                                    "name":  "libnoise (Voronoi 模块)",
+                                                    "type":  "github",
+                                                    "url":  "https://github.com/kblaschke/libnoise",
+                                                    "language":  "C++",
+                                                    "license":  "LGPL",
+                                                    "maintained":  false,
+                                                    "notes":  "老牌 C++ 实现，Voronoi 模块带 displacement 与 enableDistance 开关。"
+                                                },
+                                                {
+                                                    "name":  "FastNoise2 (Cellular 节点)",
+                                                    "type":  "github",
+                                                    "url":  "https://github.com/Auburn/FastNoise2",
+                                                    "language":  "C++17",
+                                                    "license":  "MIT",
+                                                    "maintained":  true,
+                                                    "notes":  "SIMD 版本，批量烘焙细胞噪声时明显更快。"
+                                                }
+                                            ],
+                        "variants":  [
+                                         {
+                                             "name":  "Perlin Noise",
+                                             "id":  "noise-perlin",
+                                             "note":  "便宜、连续可导，适合地形高度；但没有天然边界结构。",
+                                             "url":  "https://dl.acm.org/doi/10.1145/566654.566636"
+                                         },
+                                         {
+                                             "name":  "Simplex Noise",
+                                             "id":  "noise-simplex",
+                                             "note":  "同样便宜且各向同性，常与 Worley 相乘做岩石质感。"
+                                         }
+                                     ],
+                        "relatedIds":  [
+                                           "noise-perlin",
+                                           "noise-simplex",
+                                           "noise-fractal-fbm"
+                                       ],
+                        "bestFor":  [
+                                        "岩石/干裂地面纹理",
+                                        "生物细胞与鳞片",
+                                        "地牢分区与生物群系边界",
+                                        "马赛克/瓷砖图案"
+                                    ],
+                        "avoidWhen":  [
+                                          "需要平滑地形高度场",
+                                          "移动端高频逐像素采样（成本高）"
+                                      ],
+                        "confidence":  "high",
+                        "caveats":  "「Worley noise」与「Voronoi noise」在社区常混用，但严格 Voronoi 指完整单元剖分，Worley 只用距离值。3D 27 格查询在 GPU 上分支多，建议改用预烘焙 3D 纹理。",
+                        "addedAt":  "2026-10-16",
+                        "lastChecked":  "2026-10-16",
+                        "sources":  [
+                                        {
+                                            "url":  "http://cedric.cnam.fr/~cubaud/PROCEDURAL/worley.pdf",
+                                            "kind":  "paper",
+                                            "title":  "A Cellular Texture Basis Function — Worley 1996",
+                                            "fetchedAt":  "2026-10-16"
+                                        },
+                                        {
+                                            "url":  "https://github.com/Auburn/FastNoiseLite",
+                                            "kind":  "repo",
+                                            "title":  "FastNoiseLite — Cellular noise 支持",
+                                            "fetchedAt":  "2026-10-16"
+                                        }
+                                    ]
+                    }
+                ]
+}
