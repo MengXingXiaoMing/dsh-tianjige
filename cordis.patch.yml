@@ -1,0 +1,10 @@
+# 天机阁插件：插进 profile 根，id 供后续层按行覆盖。
+# name 是 Node 解析的模块名（包名 dsh-tianjige）。
+# 不写 dataDir：host.js 默认取「本包目录的上一级」（= algo-hub 仓库根），
+# link / 打包 / 换机器安装都能落到正确位置；要指到别处时在这里显式覆盖：
+#   dataDir: D:\somewhere\algo-hub
+- insert:
+    - id: tianjige
+      name: dsh-tianjige
+      config:
+        defaultLimit: 8
