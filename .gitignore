@@ -1,0 +1,14 @@
+# 依赖与构建产物不入库
+node_modules/
+*.tgz
+package-lock.json
+
+# 运行时数据（安装了插件后由插件自己生成）
+.dsh/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
