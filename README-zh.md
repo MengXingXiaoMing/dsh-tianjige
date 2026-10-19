@@ -2,13 +2,9 @@
 
 > [English](README.md) · [中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-天机阁是一个 DeepSeek Harness 插件：把个人整理的**算法天书**变成 agent 能直接查询的工具，
-并给人留一个可翻阅的侧栏页面。库内现有 **219 门术法**，分布在 **13 个卷**
-（渲染 / 几何 / 神经三维 / 动画 / 物理 / 程序化 / 音频 / AI / 群集 / 游戏系统 / 数学数值 /
-管线 / 工具），每条都带真实可用的现成实现链接。
-
-插件只是**接口**；天书本体在其上一级 `algo-hub` 仓库里（`data/algorithms.json` +
-`data/taxonomy.json`）。包内不打包任何数据，所以同一份安装可以指向任意数据目录。
+插件只是**接口**；天书本体在上一级 `algo-hub` 仓库里（`data/algorithms.json` +
+`data/taxonomy.json`）。独立安装时包内自带一份起始库快照（`seed/`），首次运行自动播种到
+`~/.dsh/tianjige`，所以没有仓库也能直接用。
 
 ## Features
 
@@ -28,20 +24,18 @@
 插件包本体就是 `tianjige-plugin/` 目录。给 profile 装上并启用：
 
 ```powershell
-# 从 npm 安装（发布后）
-dsh plugin --profile web add dsh-tianjige
+# 从 GitHub Release 安装（不需要 npm 账号）
+dsh plugin --profile desktop add https://github.com/MengXingXiaoMing/dsh-tianjige/releases/download/v1.3.0/dsh-tianjige-1.3.0.tgz
 
-# 或从打包好的 tgz 安装
-dsh plugin --profile web add ./dsh-tianjige-<version>.tgz
+# 从 npm 安装（发布之后）
+dsh plugin --profile desktop add dsh-tianjige
 
-# 方式一：plugin_manager 工具
-#   action=install_bundle, target=link:C:/path/to/algo-hub/tianjige-plugin
-# 方式二：profile package.json 里加 link: 依赖 + dsh.profile.bundles 条目
+# 从本地仓库安装（开发用）：直接加目录
+dsh plugin --profile desktop add C:\path\to\algo-hub\tianjige-plugin
 ```
 
-装完**重启 DSH**：宿主侧入口模块只在启动时 import 一次，刷新页面不会重新装载。
-重启前可以先用 `node --check host.js` / `node --check lib/*.mjs` 做静态自检。
-
+（profile 名不是 `desktop` 就换成你自己的。）装完**重启 DSH**：宿主侧入口模块只在启动时 import
+一次，刷新页面不会重新装载。重启前可以先用 `node --check host.js` / `node --check lib/*.mjs` 做静态自检。
 ## Configuration
 
 插件在 `cordis.patch.yml` 里插一行 `id: tianjige`，两个配置键都可选：
@@ -132,6 +126,30 @@ algo-hub/
 - 静态检查：`dsh-plugin-dev check --strict`（来自 `dsh-plugin-guide` 技能包）以及对每个入口
   `node --check`。
 
+## Publishing
+
+分发有两条路，都是可选的；GitHub 始终是唯一事实来源。
+
+**发版（维护者）。** 改 `version`，跑 `npm test` 和 `dsh-plugin-dev check --strict`，然后打包并挂到
+GitHub Release 上：
+
+```powershell
+npm pack
+gh release create v<version> dsh-tianjige-<version>.tgz --title "v<version>" --notes "..."
+```
+
+**npm（可选）。** `npm login` 之后执行 `npm publish --access public`，用户就能用
+`dsh plugin --profile desktop add dsh-tianjige` 安装。上架市场并不要求先发 npm。
+
+**DSH 插件市场。** 注册文件放在 [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)：
+一个插件一个文件，路径 `data/plugins/<owner>__<repo>.yml`，字段为 `url`、`name`、`category`、可选的
+`tarball`，以及 `description.en`（能写就再加 `description.zh`）。条件：仓库公开、`package.json` 里声明
+`dsh.bundle.patch` 且仓库根有 `cordis.patch.yml`、带 `dsh-plugin` topic、描述与代码一致、仓库创建满
+一天——最后这条由 CI 自动检查，用来挡「PR 前几分钟才建仓库」的刷榜号。从你的 fork 提 PR，合并后市场
+展示的就是这条注册记录。
+
+**推荐列表（可选）。** `DshMarketPlace/awesome-dsh-plugin` 维护 `data/curated.yml`；在那里提 PR 只是
+推荐位、不是注册，所以等 registry 收录之后再提。
 ## License
 
 MIT —— 见 [LICENSE](LICENSE)。

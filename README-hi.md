@@ -2,14 +2,9 @@
 
 > [English](README.md) · [中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-Tianjige एक DeepSeek Harness प्लगइन है जो व्यक्तिगत *एल्गोरिदम कोडेक्स* को ऐसी चीज़ बना देता है
-जिसे एजेंट सीधे खोज सके: **13 डोमेन** (रेंडरिंग, ज्यामिति, neural-3d, एनिमेशन, भौतिकी, प्रोसीजरल,
-ऑडियो, ai-ml, भीड़, गेम सिस्टम, संख्यात्मक गणित, पाइपलाइन, टूलिंग) में **219 एल्गोरिदम**, हर एक के
-साथ वास्तविक कार्यशील इम्प्लीमेंटेशन का लिंक — और इंसानों के लिए एक पढ़ने योग्य साइडबार पेज।
-
 प्लगइन केवल *इंटरफ़ेस* है; कोडेक्स ऊपरी स्तर के `algo-hub` रिपॉज़िटरी में रहता है
-(`data/algorithms.json` + `data/taxonomy.json`)। पैकेज में कोई डेटा नहीं है, इसलिए एक ही इंस्टॉल
-किसी भी डेटा डायरेक्टरी के लिए काम करता है।
+(`data/algorithms.json` + `data/taxonomy.json`)। स्वतंत्र इंस्टॉल में शुरुआती लाइब्रेरी का स्नैपशॉट
+(`seed/`) आता है और पहले रन पर `~/.dsh/tianjige` में बीज डाल देता है, इसलिए वही पैकेज बिना रिपॉज़िटरी भी चलता है।
 
 ## Features
 
@@ -32,21 +27,19 @@ Tianjige एक DeepSeek Harness प्लगइन है जो व्यक�
 पैकेज `tianjige-plugin/` डायरेक्टरी है। इसे DSH प्रोफ़ाइल में इंस्टॉल करें और सक्षम करें:
 
 ```powershell
-# npm से (प्रकाशित पैकेज)
-dsh plugin --profile web add dsh-tianjige
+# GitHub release से (npm खाते की ज़रूरत नहीं)
+dsh plugin --profile desktop add https://github.com/MengXingXiaoMing/dsh-tianjige/releases/download/v1.3.0/dsh-tianjige-1.3.0.tgz
 
-# या पैक किए गए tarball से
-dsh plugin --profile web add ./dsh-tianjige-<version>.tgz
+# npm से, पैकेज प्रकाशित होने के बाद
+dsh plugin --profile desktop add dsh-tianjige
 
-# विकल्प 1 — plugin_manager टूल
-#   action=install_bundle, target=link:C:/path/to/algo-hub/tianjige-plugin
-# विकल्प 2 — प्रोफ़ाइल package.json में link: निर्भरता + dsh.profile.bundles प्रविष्टि
+# स्थानीय चेकआउट से (विकास): डायरेक्टरी जोड़ें
+dsh plugin --profile desktop add C:\path\to\algo-hub\tianjige-plugin
 ```
 
-इसके बाद **DSH रीस्टार्ट करें**: होस्ट हिस्सा स्टार्टअप पर केवल एक बार import होता है, पेज रीफ़्रेश
-उसे दोबारा लोड नहीं करता। रीस्टार्ट से पहले `node --check host.js` और `node --check lib/*.mjs`
-से जाँच सकते हैं।
-
+अगर आपका प्रोफ़ाइल `desktop` नहीं है तो अपना नाम डालें। इसके बाद **DSH रीस्टार्ट करें**: होस्ट हिस्सा
+स्टार्टअप पर केवल एक बार import होता है, पेज रीफ़्रेश उसे दोबारा लोड नहीं करता। रीस्टार्ट से पहले
+`node --check host.js` और `node --check lib/*.mjs` से जाँच सकते हैं।
 ## Configuration
 
 प्लगइन `cordis.patch.yml` के ज़रिए एक पंक्ति (`id: tianjige`) जोड़ता है। दोनों कुंजियाँ वैकल्पिक हैं:
@@ -140,6 +133,31 @@ npm से इंस्टॉल होने पर पैकेज के आ�
 - स्थिर जाँच: `dsh-plugin-dev check --strict` (`dsh-plugin-guide` स्किल पैकेज) और हर एंट्री पर
   `node --check`।
 
+## Publishing
+
+दो वितरण चैनल हैं; दोनों वैकल्पिक हैं और GitHub ही सत्य का स्रोत रहता है।
+
+**रिलीज़ बनाना (मेंटेनर)।** `version` बढ़ाएँ, `npm test` और `dsh-plugin-dev check --strict` चलाएँ,
+फिर tarball बनाकर GitHub release में संलग्न करें:
+
+```powershell
+npm pack
+gh release create v<version> dsh-tianjige-<version>.tgz --title "v<version>" --notes "..."
+```
+
+**npm (वैकल्पिक)।** `npm login` के बाद `npm publish --access public` चलाएँ। उपयोगकर्ता फिर
+`dsh plugin --profile desktop add dsh-tianjige` से इंस्टॉल करते हैं। मार्केटप्लेस के लिए npm ज़रूरी नहीं।
+
+**DSH मार्केटप्लेस।** पंजीकरण [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) में है:
+प्रति प्लगइन एक फ़ाइल `data/plugins/<owner>__<repo>.yml`, जिसमें `url`, `name`, `category`, वैकल्पिक
+`tarball`, और `description.en` (साथ में `description.zh` भी लिख सकें तो)। शर्तें: सार्वजनिक रिपॉज़िटरी,
+`package.json` में `dsh.bundle.patch` और रूट में `cordis.patch.yml`, `dsh-plugin` topic, कोड से मेल खाता
+विवरण, और रिपॉज़िटरी कम से कम एक दिन पुरानी — यह अंतिम शर्त स्वचालित रूप से जाँची जाती है, ताकि PR से
+कुछ मिनट पहले बनी रिपॉज़िटरी फ़िल्टर हों। अपने fork से PR खोलें; मर्ज होने पर यही प्रविष्टि
+मार्केटप्लेस में दिखती है।
+
+**क्यूरेटेड सूचियाँ (वैकल्पिक)।** `DshMarketPlace/awesome-dsh-plugin` में `data/curated.yml` है। वहाँ PR
+सिफ़ारिश है, पंजीकरण नहीं, इसलिए रजिस्ट्री प्रविष्टि मर्ज होने के बाद भेजें।
 ## License
 
 MIT — देखें [LICENSE](LICENSE)।

@@ -2,15 +2,9 @@
 
 > [English](README.md) · [中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-Tianjige is a DeepSeek Harness plugin that turns a personal *algorithm codex* into something an
-agent can query directly: **219 curated algorithms** across **13 domains** (rendering, geometry,
-neural-3d, animation, physics, procedural, audio, ai-ml, crowd-agent, game-systems, math-numeric,
-pipeline, tooling), each with a real working implementation link — plus a browsable sidebar page
-for humans.
-
 The plugin is the *interface*; the codex itself lives in the `algo-hub` repository one level up
-(`data/algorithms.json` + `data/taxonomy.json`). Nothing is bundled inside the package, so the
-same install works for any data directory.
+(`data/algorithms.json` + `data/taxonomy.json`). A standalone install carries a seed snapshot (`seed/`)
+and seeds `~/.dsh/tianjige` on first run, so the same package works without the repository.
 
 ## Features
 
@@ -33,21 +27,19 @@ same install works for any data directory.
 The package is the `tianjige-plugin/` directory. Install it into a DSH profile and enable it:
 
 ```powershell
-# from npm (published package)
-dsh plugin --profile web add dsh-tianjige
+# from the GitHub release (no npm account needed)
+dsh plugin --profile desktop add https://github.com/MengXingXiaoMing/dsh-tianjige/releases/download/v1.3.0/dsh-tianjige-1.3.0.tgz
 
-# or from a packed tarball
-dsh plugin --profile web add ./dsh-tianjige-<version>.tgz
+# from npm, once the package is published
+dsh plugin --profile desktop add dsh-tianjige
 
-# Option 1 — plugin_manager tool
-#   action=install_bundle, target=link:C:/path/to/algo-hub/tianjige-plugin
-# Option 2 — profile package.json: add a link: dependency + a dsh.profile.bundles entry
+# from a local checkout (development): add the directory itself
+dsh plugin --profile desktop add C:\path\to\algo-hub\tianjige-plugin
 ```
 
-Restart DSH afterwards: the host half is imported once at startup, a page refresh does not
-reload it. Before restarting you can smoke-check the sources with `node --check host.js` and
-`node --check lib/*.mjs`.
-
+Use your own profile name instead of `desktop` if you run a different one. Restart DSH afterwards:
+the host half is imported once at startup and a page refresh does not reload it. Before restarting you
+can smoke-check the sources with `node --check host.js` and `node --check lib/*.mjs`.
 ## Configuration
 
 The plugin inserts one row (`id: tianjige`) through `cordis.patch.yml`. Both keys are optional:
@@ -144,6 +136,31 @@ which accept loopback requests only. Without a `webServer` service the plugin de
 - Static checks: `dsh-plugin-dev check --strict` (from the `dsh-plugin-guide` skill package) and
   `node --check` on every entry.
 
+## Publishing
+
+There are two distribution channels; both are optional and GitHub stays the source of truth.
+
+**Cut a release (maintainers).** Bump `version`, run `npm test` and `dsh-plugin-dev check --strict`,
+then pack the tarball and attach it to a GitHub release:
+
+```powershell
+npm pack
+gh release create v<version> dsh-tianjige-<version>.tgz --title "v<version>" --notes "..."
+```
+
+**npm (optional).** After `npm login`, run `npm publish --access public`. Users then install with
+`dsh plugin --profile desktop add dsh-tianjige`. Publishing to npm is not required for the marketplace.
+
+**DSH marketplace.** Registration lives in [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin):
+one file per plugin at `data/plugins/<owner>__<repo>.yml`, holding `url`, `name`, `category`, an optional
+`tarball`, and `description.en` (plus `description.zh` if you can). The requirements are a public repo,
+`dsh.bundle.patch` in `package.json` with `cordis.patch.yml` at the root, the `dsh-plugin` topic, a
+description that matches the code, and a repository that is at least one day old — that last one is
+checked automatically, to filter out repos created minutes before a PR. Open the PR from your fork;
+once merged, the registry entry is what the marketplace lists.
+
+**Curated lists (optional).** `DshMarketPlace/awesome-dsh-plugin` keeps `data/curated.yml`. A PR there is
+a recommendation rather than a registration, so send it after the registry entry has been merged.
 ## License
 
 MIT — see [LICENSE](LICENSE).

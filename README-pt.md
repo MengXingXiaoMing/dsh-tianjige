@@ -2,15 +2,9 @@
 
 > [English](README.md) · [中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-Tianjige é um plugin do DeepSeek Harness que transforma um *códice de algoritmos* pessoal em algo
-que um agente pode consultar diretamente: **219 algoritmos** em **13 domínios** (renderização,
-geometria, neural-3d, animação, física, procedural, áudio, ai-ml, multidões, sistemas de jogo,
-matemática numérica, pipeline, ferramentas), cada um com um link para uma implementação real —
-além de uma página lateral navegável para pessoas.
-
 O plugin é a *interface*; o códice fica no repositório `algo-hub` um nível acima
-(`data/algorithms.json` + `data/taxonomy.json`). O pacote não inclui dados, então a mesma instalação
-serve para qualquer diretório de dados.
+(`data/algorithms.json` + `data/taxonomy.json`). Uma instalação independente traz um instantâneo inicial
+(`seed/`) e semeia `~/.dsh/tianjige` na primeira execução, então o mesmo pacote funciona sem o repositório.
 
 ## Features
 
@@ -33,21 +27,19 @@ serve para qualquer diretório de dados.
 O pacote é o diretório `tianjige-plugin/`. Instale em um perfil do DSH e habilite:
 
 ```powershell
-# via npm (pacote publicado)
-dsh plugin --profile web add dsh-tianjige
+# da release do GitHub (sem conta npm)
+dsh plugin --profile desktop add https://github.com/MengXingXiaoMing/dsh-tianjige/releases/download/v1.3.0/dsh-tianjige-1.3.0.tgz
 
-# ou de um tarball empacotado
-dsh plugin --profile web add ./dsh-tianjige-<version>.tgz
+# via npm, quando o pacote estiver publicado
+dsh plugin --profile desktop add dsh-tianjige
 
-# Opção 1 — ferramenta plugin_manager
-#   action=install_bundle, target=link:C:/path/to/algo-hub/tianjige-plugin
-# Opção 2 — package.json do perfil: dependência link: + entrada em dsh.profile.bundles
+# de um checkout local (desenvolvimento): adicione o diretório
+dsh plugin --profile desktop add C:\path\to\algo-hub\tianjige-plugin
 ```
 
-Reinicie o DSH depois: a metade host é importada uma única vez na inicialização e recarregar a
-página não a recarrega. Antes de reiniciar, verifique com `node --check host.js` e
-`node --check lib/*.mjs`.
-
+Use o nome do seu perfil se não for `desktop`. Reinicie o DSH depois: a metade host é importada uma
+única vez na inicialização e recarregar a página não a recarrega. Antes de reiniciar, verifique com
+`node --check host.js` e `node --check lib/*.mjs`.
 ## Configuration
 
 O plugin insere uma linha (`id: tianjige`) via `cordis.patch.yml`. As duas chaves são opcionais:
@@ -140,6 +132,31 @@ que aceitam apenas requisições de loopback. Sem o serviço `webServer` o plugi
 - Verificações estáticas: `dsh-plugin-dev check --strict` (pacote da skill `dsh-plugin-guide`) e
   `node --check` em cada entrada.
 
+## Publishing
+
+Há dois canais de distribuição; ambos são opcionais e o GitHub continua sendo a fonte da verdade.
+
+**Lançar uma versão (mantenedores).** Suba a `version`, rode `npm test` e
+`dsh-plugin-dev check --strict`, empacote o tarball e anexe a uma release do GitHub:
+
+```powershell
+npm pack
+gh release create v<version> dsh-tianjige-<version>.tgz --title "v<version>" --notes "..."
+```
+
+**npm (opcional).** Depois de `npm login`, rode `npm publish --access public`. Os usuários instalam com
+`dsh plugin --profile desktop add dsh-tianjige`. Publicar no npm não é requisito para o marketplace.
+
+**Marketplace do DSH.** O registro fica em [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin):
+um arquivo por plugin em `data/plugins/<owner>__<repo>.yml`, com `url`, `name`, `category`, um `tarball`
+opcional e `description.en` (mais `description.zh` se puder). Requisitos: repositório público,
+`dsh.bundle.patch` no `package.json` com `cordis.patch.yml` na raiz, o topic `dsh-plugin`, uma descrição
+que corresponda ao código e um repositório com pelo menos um dia de existência — este último é verificado
+automaticamente para filtrar repositórios criados minutos antes de um PR. Abra o PR a partir do seu fork;
+depois do merge, a entrada do registro é o que o marketplace lista.
+
+**Listas curadas (opcional).** `DshMarketPlace/awesome-dsh-plugin` mantém `data/curated.yml`. Um PR ali é
+uma recomendação, não um registro, então envie depois que a entrada do registro for mesclada.
 ## License
 
 MIT — veja [LICENSE](LICENSE).
